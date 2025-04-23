@@ -1,13 +1,13 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, Unlock, Download, Key } from "lucide-react";
+import { Lock, Unlock, Download, Copy } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import ImageUpload from './ImageUpload';
+import KeyInput from './KeyInput';
 import { encryptMessage, decryptMessage } from '@/utils/encryption';
 import { hideMessage, retrieveMessage, imageDataToDataURL } from '@/utils/steganography';
 import { useToast } from "@/hooks/use-toast";
@@ -56,17 +56,75 @@ const StegoCryptTabs: React.FC = () => {
     setDecryptedMessage(null);
   };
 
-  const handleEncode = async () => {
+  const validateEncodeInputs = () => {
+    if (!imageData) {
+      toast({
+        title: "Missing Image",
+        description: "Please upload an image first",
+        variant: "destructive"
+      });
+      return false;
+    }
+    if (!message) {
+      toast({
+        title: "Missing Message",
+        description: "Please enter a message to hide",
+        variant: "destructive"
+      });
+      return false;
+    }
+    if (!key) {
+      toast({
+        title: "Missing Key",
+        description: "Please provide an encryption key",
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const validateDecodeInputs = () => {
+    if (!imageData) {
+      toast({
+        title: "Missing Image",
+        description: "Please upload an image first",
+        variant: "destructive"
+      });
+      return false;
+    }
+    if (!decryptKey) {
+      toast({
+        title: "Missing Key",
+        description: "Please provide the decryption key",
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const copyToClipboard = async () => {
+    if (!decryptedMessage) return;
     try {
-      if (!imageData || !message || !key) {
-        toast({
-          title: "Missing information",
-          description: "Please provide an image, message, and encryption key",
-          variant: "destructive"
-        });
-        return;
-      }
-      
+      await navigator.clipboard.writeText(decryptedMessage);
+      toast({
+        title: "Copied!",
+        description: "Message copied to clipboard"
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to copy message",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEncode = async () => {
+    if (!validateEncodeInputs()) return;
+    
+    try {
       setEncodeLoading(true);
       
       // Step 1: Encrypt the message
@@ -74,7 +132,7 @@ const StegoCryptTabs: React.FC = () => {
       setEncryptedMessage(encrypted);
       
       // Step 2: Hide the encrypted message in the image
-      const stegoData = hideMessage(imageData, encrypted);
+      const stegoData = hideMessage(imageData!, encrypted);
       
       // Step 3: Convert the modified image data to a data URL
       const dataURL = imageDataToDataURL(stegoData, imageWidth, imageHeight);
@@ -96,20 +154,13 @@ const StegoCryptTabs: React.FC = () => {
   };
 
   const handleDecode = async () => {
+    if (!validateDecodeInputs()) return;
+    
     try {
-      if (!imageData) {
-        toast({
-          title: "Missing image",
-          description: "Please upload an image first",
-          variant: "destructive"
-        });
-        return;
-      }
-      
       setDecodeLoading(true);
       
       // Step 1: Extract the hidden message
-      const extractedEncryptedMessage = retrieveMessage(imageData);
+      const extractedEncryptedMessage = retrieveMessage(imageData!);
       setExtractedMessage(extractedEncryptedMessage);
       
       if (!extractedEncryptedMessage) {
@@ -118,39 +169,31 @@ const StegoCryptTabs: React.FC = () => {
           description: "No hidden message was detected in this image",
           variant: "destructive"
         });
-        setDecodeLoading(false);
         return;
       }
       
-      // If we have a decryption key, try to decrypt the message
-      if (decryptKey) {
-        try {
-          const decrypted = decryptMessage(extractedEncryptedMessage, decryptKey);
-          setDecryptedMessage(decrypted);
-          
-          if (!decrypted) {
-            toast({
-              title: "Decryption failed",
-              description: "The key provided could not decrypt the message",
-              variant: "destructive"
-            });
-          } else {
-            toast({
-              title: "Success!",
-              description: "Message extracted and decrypted successfully",
-            });
-          }
-        } catch (error) {
+      // Step 2: Try to decrypt the message
+      try {
+        const decrypted = decryptMessage(extractedEncryptedMessage, decryptKey);
+        setDecryptedMessage(decrypted);
+        
+        if (!decrypted) {
           toast({
-            title: "Decryption error",
+            title: "Decryption failed",
             description: "The key provided could not decrypt the message",
             variant: "destructive"
           });
+        } else {
+          toast({
+            title: "Success!",
+            description: "Message extracted and decrypted successfully",
+          });
         }
-      } else {
+      } catch (error) {
         toast({
-          title: "Message found",
-          description: "Encrypted message was extracted. Enter a key to decrypt.",
+          title: "Decryption error",
+          description: "The key provided could not decrypt the message",
+          variant: "destructive"
         });
       }
     } catch (error) {
@@ -177,7 +220,7 @@ const StegoCryptTabs: React.FC = () => {
   };
 
   return (
-    <Tabs defaultValue="hide" className="w-full max-w-4xl mx-auto">
+    <Tabs defaultValue="hide" className="w-full">
       <TabsList className="grid w-full grid-cols-2 mb-6">
         <TabsTrigger value="hide" className="text-base py-3">
           <Lock className="h-4 w-4 mr-2" /> Hide Message
@@ -217,20 +260,11 @@ const StegoCryptTabs: React.FC = () => {
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="key">Encryption Key</Label>
-                <div className="relative">
-                  <Input 
-                    id="key"
-                    type="password"
-                    placeholder="Enter encryption key"
-                    value={key}
-                    onChange={(e) => setKey(e.target.value)}
-                    className="pr-10"
-                  />
-                  <Key className="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                </div>
-              </div>
+              <KeyInput
+                id="key"
+                value={key}
+                onChange={setKey}
+              />
               
               <Button 
                 onClick={handleEncode} 
@@ -254,7 +288,7 @@ const StegoCryptTabs: React.FC = () => {
                 <img 
                   src={steganoImageURL} 
                   alt="Processed Image" 
-                  className="max-h-64 object-contain border rounded"
+                  className="max-h-64 object-contain rounded border"
                 />
               </div>
               <Button 
@@ -288,20 +322,12 @@ const StegoCryptTabs: React.FC = () => {
               <CardDescription>Provide the key to decrypt the hidden message</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="decrypt-key">Decryption Key</Label>
-                <div className="relative">
-                  <Input 
-                    id="decrypt-key"
-                    type="password"
-                    placeholder="Enter decryption key"
-                    value={decryptKey}
-                    onChange={(e) => setDecryptKey(e.target.value)}
-                    className="pr-10"
-                  />
-                  <Key className="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                </div>
-              </div>
+              <KeyInput
+                id="decrypt-key"
+                value={decryptKey}
+                onChange={setDecryptKey}
+                label="Decryption Key"
+              />
               
               <Button 
                 onClick={handleDecode} 
@@ -314,7 +340,7 @@ const StegoCryptTabs: React.FC = () => {
           </Card>
         </div>
         
-        {extractedMessage && (
+        {decryptedMessage && (
           <Card>
             <CardHeader>
               <CardTitle>Retrieved Message</CardTitle>
@@ -325,15 +351,25 @@ const StegoCryptTabs: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {decryptedMessage ? (
+              <div className="relative">
                 <div className="p-4 border rounded bg-primary/5 break-words">
                   {decryptedMessage}
                 </div>
-              ) : (
-                <div className="text-center text-muted-foreground">
-                  <p>Message found but unable to decrypt.</p>
-                  <p>Please check your decryption key.</p>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={copyToClipboard}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              {!decryptedMessage && (
+                <Alert>
+                  <AlertDescription>
+                    Message found but unable to decrypt. Please check your decryption key.
+                  </AlertDescription>
+                </Alert>
               )}
             </CardContent>
           </Card>
