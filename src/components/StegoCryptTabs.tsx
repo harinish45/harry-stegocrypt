@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, Unlock, Download, Copy } from "lucide-react";
+import { Lock, Unlock, Download, Copy, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ImageUpload from './ImageUpload';
@@ -54,6 +54,11 @@ const StegoCryptTabs: React.FC = () => {
     setSteganoImageURL(null);
     setExtractedMessage(null);
     setDecryptedMessage(null);
+    
+    toast({
+      title: "Image Loaded",
+      description: `${width}×${height} image loaded successfully`,
+    });
   };
 
   const validateEncodeInputs = () => {
@@ -158,9 +163,11 @@ const StegoCryptTabs: React.FC = () => {
     
     try {
       setDecodeLoading(true);
+      console.log("Starting decoding process with image data length:", imageData?.length);
       
       // Step 1: Extract the hidden message
       const extractedEncryptedMessage = retrieveMessage(imageData!);
+      console.log("Extracted encrypted message:", extractedEncryptedMessage);
       setExtractedMessage(extractedEncryptedMessage);
       
       if (!extractedEncryptedMessage) {
@@ -169,12 +176,15 @@ const StegoCryptTabs: React.FC = () => {
           description: "No hidden message was detected in this image",
           variant: "destructive"
         });
+        setDecodeLoading(false);
         return;
       }
       
       // Step 2: Try to decrypt the message
       try {
+        console.log("Attempting to decrypt with key length:", decryptKey.length);
         const decrypted = decryptMessage(extractedEncryptedMessage, decryptKey);
+        console.log("Decryption result:", decrypted ? "Success" : "Failed");
         setDecryptedMessage(decrypted);
         
         if (!decrypted) {
@@ -187,9 +197,11 @@ const StegoCryptTabs: React.FC = () => {
           toast({
             title: "Success!",
             description: "Message extracted and decrypted successfully",
+            icon: <ShieldCheck className="h-4 w-4" />
           });
         }
       } catch (error) {
+        console.error("Decryption error:", error);
         toast({
           title: "Decryption error",
           description: "The key provided could not decrypt the message",
@@ -197,6 +209,7 @@ const StegoCryptTabs: React.FC = () => {
         });
       }
     } catch (error) {
+      console.error("Message extraction error:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to retrieve message",
@@ -217,6 +230,11 @@ const StegoCryptTabs: React.FC = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    
+    toast({
+      title: "Download started",
+      description: "Your image is being downloaded"
+    });
   };
 
   return (
@@ -340,7 +358,7 @@ const StegoCryptTabs: React.FC = () => {
           </Card>
         </div>
         
-        {decryptedMessage && (
+        {extractedMessage !== null && (
           <Card>
             <CardHeader>
               <CardTitle>Retrieved Message</CardTitle>
@@ -351,20 +369,21 @@ const StegoCryptTabs: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="relative">
-                <div className="p-4 border rounded bg-primary/5 break-words">
-                  {decryptedMessage}
+              {decryptedMessage ? (
+                <div className="relative">
+                  <div className="p-4 border rounded bg-primary/5 break-words">
+                    {decryptedMessage}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={copyToClipboard}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={copyToClipboard}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-              {!decryptedMessage && (
+              ) : (
                 <Alert>
                   <AlertDescription>
                     Message found but unable to decrypt. Please check your decryption key.

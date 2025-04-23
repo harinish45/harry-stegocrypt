@@ -92,46 +92,59 @@ export const hideMessage = (
  * @returns The hidden message
  */
 export const retrieveMessage = (imageData: Uint8ClampedArray): string => {
-  const data = new Uint8ClampedArray(imageData);
   let binary = '';
   
   // Extract LSBs from RGB channels (skip alpha)
-  for (let i = 0; i < data.length; i += 4) {
+  for (let i = 0; i < imageData.length; i += 4) {
     // Extract from R channel
-    binary += (data[i] & 0x01).toString();
+    binary += (imageData[i] & 0x01).toString();
     
     // Extract from G channel
-    binary += (data[i + 1] & 0x01).toString();
+    binary += (imageData[i + 1] & 0x01).toString();
     
     // Extract from B channel
-    binary += (data[i + 2] & 0x01).toString();
+    binary += (imageData[i + 2] & 0x01).toString();
     
-    // If we've extracted enough bits to determine the message length
+    // Once we have the first 24 bits, we can determine message length
     if (binary.length === 24) {
       const messageLength = parseInt(binary, 2);
-      // Calculate total bits needed (length prefix + actual message)
-      const totalBits = 24 + (messageLength * 8);
       
-      // Continue extracting until we have all message bits
-      if (binary.length < totalBits) {
-        continue;
+      // Verify that the message length is reasonable
+      if (messageLength <= 0 || messageLength > 10000) {
+        console.log("Invalid message length detected:", messageLength);
+        return ''; // Return empty if message length is invalid
       }
       
-      // Return the extracted message
-      return binaryToText(binary.substring(24, totalBits));
+      // Calculate how many more bits we need to extract
+      const totalBitsNeeded = 24 + (messageLength * 8);
+      
+      // Continue extracting until we have all the bits
+      if (binary.length < totalBitsNeeded) {
+        continue;
+      }
     }
     
-    // If we have the message length and all message bits, stop
-    if (binary.length > 24) {
+    // If we have enough bits to extract the complete message
+    if (binary.length >= 24) {
       const messageLength = parseInt(binary.substring(0, 24), 2);
+      
+      // Verify that the message length is reasonable
+      if (messageLength <= 0 || messageLength > 10000) {
+        console.log("Invalid message length detected:", messageLength);
+        return ''; // Return empty if message length is invalid
+      }
+      
       const totalBits = 24 + (messageLength * 8);
       
+      // If we have all bits needed, extract and return the message
       if (binary.length >= totalBits) {
-        return binaryToText(binary.substring(24, totalBits));
+        const messageBinary = binary.substring(24, totalBits);
+        return binaryToText(messageBinary);
       }
     }
   }
   
+  console.log("Could not find a valid message in the image");
   return '';
 };
 
