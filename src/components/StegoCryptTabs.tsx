@@ -3,12 +3,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, Unlock, Download, Copy, ShieldCheck } from "lucide-react";
+import { Lock, Unlock, Download, Copy, BookOpen } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ImageUpload from './ImageUpload';
 import KeyInput from './KeyInput';
-import { encryptMessage, decryptMessage } from '@/utils/encryption';
+import { AlgorithmSelector } from './AlgorithmSelector';
+import { EncryptionMetadataDisplay } from './EncryptionMetadataDisplay';
+import { SecurityAnalysis } from './SecurityAnalysis';
+import { encryptMessage, decryptMessage, EncryptionAlgorithm, EncryptionMetadata } from '@/utils/encryptionAdvanced';
 import { hideMessage, retrieveMessage, imageDataToDataURL } from '@/utils/steganography';
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,13 +28,16 @@ const StegoCryptTabs: React.FC = () => {
   // Message input states
   const [message, setMessage] = useState('');
   const [key, setKey] = useState('');
+  const [algorithm, setAlgorithm] = useState<EncryptionAlgorithm>('AES');
   
   // Encryption outputs
   const [encryptedMessage, setEncryptedMessage] = useState<string | null>(null);
   const [steganoImageURL, setSteganoImageURL] = useState<string | null>(null);
+  const [encryptionMetadata, setEncryptionMetadata] = useState<EncryptionMetadata | null>(null);
   
   // Decryption inputs and outputs
   const [decryptKey, setDecryptKey] = useState('');
+  const [decryptAlgorithm, setDecryptAlgorithm] = useState<EncryptionAlgorithm>('AES');
   const [extractedMessage, setExtractedMessage] = useState<string | null>(null);
   const [decryptedMessage, setDecryptedMessage] = useState<string | null>(null);
   
@@ -133,8 +139,9 @@ const StegoCryptTabs: React.FC = () => {
       setEncodeLoading(true);
       
       // Step 1: Encrypt the message
-      const encrypted = encryptMessage(message, key);
+      const { encrypted, metadata } = encryptMessage(message, key, algorithm);
       setEncryptedMessage(encrypted);
+      setEncryptionMetadata(metadata);
       
       // Step 2: Hide the encrypted message in the image
       const stegoData = hideMessage(imageData!, encrypted);
@@ -145,7 +152,7 @@ const StegoCryptTabs: React.FC = () => {
       
       toast({
         title: "Success!",
-        description: "Your message has been hidden in the image",
+        description: `Message encrypted with ${algorithm} and hidden in the image`,
       });
     } catch (error) {
       toast({
@@ -183,7 +190,7 @@ const StegoCryptTabs: React.FC = () => {
       // Step 2: Try to decrypt the message
       try {
         console.log("Attempting to decrypt with key length:", decryptKey.length);
-        const decrypted = decryptMessage(extractedEncryptedMessage, decryptKey);
+        const decrypted = decryptMessage(extractedEncryptedMessage, decryptKey, decryptAlgorithm);
         console.log("Decryption result:", decrypted ? "Success" : "Failed");
         setDecryptedMessage(decrypted);
         
@@ -238,12 +245,15 @@ const StegoCryptTabs: React.FC = () => {
 
   return (
     <Tabs defaultValue="hide" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-6">
+      <TabsList className="grid w-full grid-cols-3 mb-6">
         <TabsTrigger value="hide" className="text-base py-3">
           <Lock className="h-4 w-4 mr-2" /> Hide Message
         </TabsTrigger>
         <TabsTrigger value="retrieve" className="text-base py-3">
           <Unlock className="h-4 w-4 mr-2" /> Retrieve Message
+        </TabsTrigger>
+        <TabsTrigger value="analysis" className="text-base py-3">
+          <BookOpen className="h-4 w-4 mr-2" /> Security Analysis
         </TabsTrigger>
       </TabsList>
       
@@ -277,6 +287,11 @@ const StegoCryptTabs: React.FC = () => {
                 />
               </div>
               
+              <AlgorithmSelector
+                value={algorithm}
+                onChange={setAlgorithm}
+              />
+              
               <KeyInput
                 id="key"
                 value={key}
@@ -295,28 +310,32 @@ const StegoCryptTabs: React.FC = () => {
         </div>
         
         {steganoImageURL && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Result</CardTitle>
-              <CardDescription>Your message has been hidden in this image</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-center">
-                <img 
-                  src={steganoImageURL} 
-                  alt="Processed Image" 
-                  className="max-h-64 object-contain rounded border"
-                />
-              </div>
-              <Button 
-                onClick={downloadSteganoImage}
-                className="w-full"
-                variant="outline"
-              >
-                <Download className="h-4 w-4 mr-2" /> Download Image
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Result</CardTitle>
+                <CardDescription>Your message has been hidden in this image</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-center">
+                  <img 
+                    src={steganoImageURL} 
+                    alt="Processed Image" 
+                    className="max-h-64 object-contain rounded border"
+                  />
+                </div>
+                <Button 
+                  onClick={downloadSteganoImage}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Download className="h-4 w-4 mr-2" /> Download Image
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <EncryptionMetadataDisplay metadata={encryptionMetadata} />
+          </div>
         )}
       </TabsContent>
       
@@ -339,6 +358,11 @@ const StegoCryptTabs: React.FC = () => {
               <CardDescription>Provide the key to decrypt the hidden message</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <AlgorithmSelector
+                value={decryptAlgorithm}
+                onChange={setDecryptAlgorithm}
+              />
+              
               <KeyInput
                 id="decrypt-key"
                 value={decryptKey}
@@ -392,6 +416,11 @@ const StegoCryptTabs: React.FC = () => {
             </CardContent>
           </Card>
         )}
+      </TabsContent>
+      
+      {/* Security Analysis Tab */}
+      <TabsContent value="analysis">
+        <SecurityAnalysis />
       </TabsContent>
     </Tabs>
   );
