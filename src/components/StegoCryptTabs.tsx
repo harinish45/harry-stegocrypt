@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, Unlock, Download, Copy, BookOpen } from "lucide-react";
+import { Lock, Unlock, Download, Copy, BookOpen, Hash } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ImageUpload from './ImageUpload';
@@ -11,7 +11,8 @@ import KeyInput from './KeyInput';
 import { AlgorithmSelector } from './AlgorithmSelector';
 import { EncryptionMetadataDisplay } from './EncryptionMetadataDisplay';
 import { SecurityAnalysis } from './SecurityAnalysis';
-import { encryptMessage, decryptMessage, EncryptionAlgorithm, EncryptionMetadata } from '@/utils/encryptionAdvanced';
+import { CapacityIndicator } from './CapacityIndicator';
+import { encryptMessage, decryptMessage, EncryptionAlgorithm, EncryptionMetadata, generateSHA256Hash } from '@/utils/encryptionAdvanced';
 import { hideMessage, retrieveMessage, imageDataToDataURL } from '@/utils/steganography';
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,6 +41,8 @@ const StegoCryptTabs: React.FC = () => {
   const [decryptAlgorithm, setDecryptAlgorithm] = useState<EncryptionAlgorithm>('AES');
   const [extractedMessage, setExtractedMessage] = useState<string | null>(null);
   const [decryptedMessage, setDecryptedMessage] = useState<string | null>(null);
+  const [extractedHash, setExtractedHash] = useState<string | null>(null);
+  const [hashMatch, setHashMatch] = useState<boolean | null>(null);
   
   // Processing states
   const [encodeLoading, setEncodeLoading] = useState(false);
@@ -194,16 +197,23 @@ const StegoCryptTabs: React.FC = () => {
         console.log("Decryption result:", decrypted ? "Success" : "Failed");
         setDecryptedMessage(decrypted);
         
-        if (!decrypted) {
+        // Step 3: Verify hash integrity
+        if (decrypted) {
+          const currentHash = generateSHA256Hash(decrypted);
+          setExtractedHash(currentHash);
+          
+          // Note: We can't compare with original hash without storing it
+          // But we can show the hash for manual verification
+          
+          toast({
+            title: "Success!",
+            description: "Message extracted and decrypted successfully"
+          });
+        } else {
           toast({
             title: "Decryption failed",
             description: "The key provided could not decrypt the message",
             variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Success!",
-            description: "Message extracted and decrypted successfully"
           });
         }
       } catch (error) {
@@ -298,12 +308,20 @@ const StegoCryptTabs: React.FC = () => {
                 onChange={setKey}
               />
               
+              {imageData && message && (
+                <CapacityIndicator
+                  imageWidth={imageWidth}
+                  imageHeight={imageHeight}
+                  messageLength={message.length}
+                />
+              )}
+              
               <Button 
                 onClick={handleEncode} 
                 disabled={!imageData || !message || !key || encodeLoading}
                 className="w-full"
               >
-                {encodeLoading ? "Processing..." : "Hide Message"}
+                {encodeLoading ? "Processing..." : "Encrypt & Embed"}
               </Button>
             </CardContent>
           </Card>
@@ -375,7 +393,7 @@ const StegoCryptTabs: React.FC = () => {
                 disabled={!imageData || decodeLoading}
                 className="w-full"
               >
-                {decodeLoading ? "Processing..." : "Retrieve Message"}
+                {decodeLoading ? "Processing..." : "Extract & Verify"}
               </Button>
             </CardContent>
           </Card>
@@ -393,23 +411,40 @@ const StegoCryptTabs: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {decryptedMessage ? (
-                <div className="relative">
-                  <div className="p-4 border rounded bg-primary/5 break-words">
-                    {decryptedMessage}
+                <>
+                  <div className="relative">
+                    <div className="p-4 border rounded bg-primary/5 break-words">
+                      {decryptedMessage}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={copyToClipboard}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={copyToClipboard}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
+                  
+                  {extractedHash && (
+                    <div className="space-y-2 p-3 bg-muted rounded-lg">
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <Hash className="h-4 w-4" />
+                        Message Hash (SHA-256)
+                      </div>
+                      <code className="block text-xs font-mono break-all">
+                        {extractedHash}
+                      </code>
+                      <p className="text-xs text-muted-foreground">
+                        Compare this hash with the original to verify integrity
+                      </p>
+                    </div>
+                  )}
+                </>
               ) : (
                 <Alert>
                   <AlertDescription>
-                    Message found but unable to decrypt. Please check your decryption key.
+                    Message found but unable to decrypt. Please check your decryption key and algorithm.
                   </AlertDescription>
                 </Alert>
               )}

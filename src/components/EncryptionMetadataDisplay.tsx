@@ -1,13 +1,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Hash, Key, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, Hash, Key, Shield, Copy, CheckCircle2 } from "lucide-react";
 import { EncryptionMetadata } from "@/utils/encryptionAdvanced";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface EncryptionMetadataDisplayProps {
   metadata: EncryptionMetadata | null;
 }
 
 export const EncryptionMetadataDisplay = ({ metadata }: EncryptionMetadataDisplayProps) => {
+  const [hashCopied, setHashCopied] = useState(false);
+  const { toast } = useToast();
+  
   if (!metadata) return null;
 
   const formatTimestamp = (timestamp: string) => {
@@ -24,6 +30,24 @@ export const EncryptionMetadataDisplay = ({ metadata }: EncryptionMetadataDispla
         return 'outline';
       default:
         return 'default';
+    }
+  };
+  
+  const copyHash = async () => {
+    try {
+      await navigator.clipboard.writeText(metadata.messageHash);
+      setHashCopied(true);
+      toast({
+        title: "Hash Copied",
+        description: "SHA-256 hash copied to clipboard"
+      });
+      setTimeout(() => setHashCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to copy hash",
+        variant: "destructive"
+      });
     }
   };
 
@@ -69,14 +93,31 @@ export const EncryptionMetadataDisplay = ({ metadata }: EncryptionMetadataDispla
           </div>
         )}
 
-        <div className="flex items-start justify-between gap-2">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Hash className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Message Hash:</span>
+            <span className="text-sm font-medium">Message Hash (SHA-256):</span>
           </div>
-          <span className="text-xs text-muted-foreground font-mono break-all max-w-[200px]">
-            {metadata.messageHash}
-          </span>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-xs font-mono bg-muted p-2 rounded break-all">
+              {metadata.messageHash}
+            </code>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={copyHash}
+              className="shrink-0"
+            >
+              {hashCopied ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Use this hash to verify message integrity after extraction
+          </p>
         </div>
       </CardContent>
     </Card>
