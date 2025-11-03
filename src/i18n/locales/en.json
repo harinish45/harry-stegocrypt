@@ -31,6 +31,27 @@
     "medium": "Medium",
     "strong": "Strong"
   },
+  "algorithms": {
+    "select": "Select algorithm",
+    "aes": {
+      "name": "AES-256",
+      "description": "Advanced Encryption Standard - Fast symmetric encryption, widely used in industry"
+    },
+    "rsa": {
+      "name": "RSA-2048",
+      "description": "Rivest-Shamir-Adleman - Asymmetric encryption using public/private key pairs"
+    },
+    "chacha": {
+      "name": "ChaCha20",
+      "description": "Modern stream cipher - Excellent performance and security"
+    },
+    "tooltip": {
+      "description": "Choose the encryption algorithm for securing your message. Each has different characteristics:",
+      "aes": "Best for speed and compatibility",
+      "rsa": "Best for key exchange scenarios",
+      "chacha": "Best for modern applications"
+    }
+  },
   "buttons": {
     "encryptEmbed": "Encrypt & Embed",
     "extractVerify": "Extract & Verify",
