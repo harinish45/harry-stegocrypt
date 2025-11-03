@@ -1,0 +1,90 @@
+{
+  "app": {
+    "title": "StegoCrypt",
+    "subtitle": "Securely hide encrypted messages in images using advanced steganography",
+    "footer": "StegoCrypt - Secure your communications with steganography and encryption"
+  },
+  "tabs": {
+    "hide": "Hide Message",
+    "retrieve": "Retrieve Message",
+    "analysis": "Security Analysis"
+  },
+  "upload": {
+    "title": "Input Image",
+    "description": "Upload an image to hide your message",
+    "dropzone": "Drag and drop an image, or click to select",
+    "format": "PNG, JPG up to 5MB"
+  },
+  "message": {
+    "title": "Secret Message",
+    "description": "Enter the message you want to hide",
+    "label": "Message",
+    "placeholder": "Enter your secret message here"
+  },
+  "encryption": {
+    "algorithm": "Encryption Algorithm",
+    "key": "Encryption Key",
+    "decryptionKey": "Decryption Key",
+    "keyPlaceholder": "Enter or generate encryption key",
+    "generate": "Generate",
+    "weak": "Weak",
+    "medium": "Medium",
+    "strong": "Strong"
+  },
+  "buttons": {
+    "encryptEmbed": "Encrypt & Embed",
+    "extractVerify": "Extract & Verify",
+    "download": "Download Image",
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "capacity": {
+    "title": "Image Capacity",
+    "available": "Plenty of capacity available",
+    "good": "Good capacity usage",
+    "full": "Image capacity almost full",
+    "canHold": "Image can hold approximately {{bytes}} characters."
+  },
+  "metadata": {
+    "title": "Encryption Metadata",
+    "description": "Security information about the encrypted message",
+    "algorithm": "Algorithm:",
+    "timestamp": "Timestamp:",
+    "keyStrength": "Key Strength:",
+    "messageHash": "Message Hash (SHA-256):",
+    "verifyIntegrity": "Use this hash to verify message integrity after extraction"
+  },
+  "result": {
+    "title": "Result",
+    "description": "Your message has been hidden in this image",
+    "retrieved": "Retrieved Message",
+    "decrypted": "Your decrypted message is shown below",
+    "failed": "Encrypted message was found but could not be decrypted",
+    "compareHash": "Compare this hash with the original to verify integrity"
+  },
+  "errors": {
+    "missingImage": "Missing Image",
+    "missingImageDesc": "Please upload an image first",
+    "missingMessage": "Missing Message",
+    "missingMessageDesc": "Please enter a message to hide",
+    "missingKey": "Missing Key",
+    "missingKeyDesc": "Please provide an encryption key",
+    "decryptionKeyDesc": "Please provide the decryption key",
+    "noMessage": "No message found",
+    "noMessageDesc": "No hidden message was detected in this image",
+    "decryptionFailed": "Decryption failed",
+    "decryptionFailedDesc": "The key provided could not decrypt the message"
+  },
+  "success": {
+    "encrypted": "Message encrypted with {{algorithm}} and hidden in the image",
+    "extracted": "Message extracted and decrypted successfully",
+    "downloaded": "Your image is being downloaded",
+    "imageSaved": "Encrypted image saved!",
+    "imageLoaded": "Image Loaded",
+    "imageLoadedDesc": "{{width}}×{{height}} image loaded successfully",
+    "keyGenerated": "Key Generated",
+    "keyGeneratedDesc": "A strong random key has been generated",
+    "hashCopied": "Hash Copied",
+    "hashCopiedDesc": "SHA-256 hash copied to clipboard"
+  }
+}
