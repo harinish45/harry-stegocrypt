@@ -196,8 +196,7 @@ const StegoCryptTabs: React.FC = () => {
         } else {
           toast({
             title: "Success!",
-            description: "Message extracted and decrypted successfully",
-            icon: <ShieldCheck className="h-4 w-4" />
+            description: "Message extracted and decrypted successfully"
           });
         }
       } catch (error) {
