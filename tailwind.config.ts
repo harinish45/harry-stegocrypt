@@ -19,6 +19,18 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['DM Sans', 'system-ui', 'sans-serif'],
+				display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+			},
+			backgroundImage: {
+				'gradient-aurora': 'var(--gradient-aurora)',
+				'gradient-surface': 'var(--gradient-surface)',
+			},
+			boxShadow: {
+				glow: 'var(--shadow-glow)',
+				elegant: 'var(--shadow-elegant)',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
