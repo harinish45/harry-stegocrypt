@@ -93,7 +93,7 @@ export default function QrKeyPage() {
                 </div>
               </>
             ) : (
-              <div className="text-sm text-muted-foreground py-20">QR will appear here</tool_call_begin<antThinking>️The tool call was cut off. I need to continue writing the file content. Let me complete the QR Key page with the decoder section.</tool_call_begin>}
+              <div className="text-sm text-muted-foreground py-20">QR will appear here</div>
           </CardContent>
         </Card>
       </div>
