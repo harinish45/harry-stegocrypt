@@ -94,6 +94,7 @@ export default function QrKeyPage() {
               </>
             ) : (
               <div className="text-sm text-muted-foreground py-20">QR will appear here</div>
+            )}
           </CardContent>
         </Card>
       </div>
