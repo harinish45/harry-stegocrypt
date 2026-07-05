@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import QRCode from 'qrcode';
-import { QrCode, Copy, Download } from 'lucide-react';
+import jsQR from 'jsqr';
+import { QrCode, Copy, Download, Upload, ScanLine } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -10,8 +11,13 @@ import PageHeader from '@/components/PageHeader';
 
 export default function QrKeyPage() {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
+
+  const [scanText, setScanText] = useState('');
+  const [scanError, setScanError] = useState('');
 
   const gen = async () => {
     if (!text) return;
@@ -23,9 +29,49 @@ export default function QrKeyPage() {
     a.href = url; a.download = 'qrcode.png'; a.click();
   };
 
+  const decodeImage = useCallback((file: File) => {
+    setScanText('');
+    setScanError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height);
+        if (code) {
+          setScanText(code.data);
+        } else {
+          setScanError('No QR code found in that image. Try a clearer or larger image.');
+        }
+      };
+      img.onerror = () => setScanError('Could not load that image file.');
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) decodeImage(file);
+  }, [decodeImage]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) decodeImage(file);
+  };
+
   return (
-    <div>
+    <div className="space-y-8">
       <PageHeader icon={QrCode} title="QR Key Exchange" description="Turn a public key, message, or any text into a scannable QR code." />
+
+      {/* Encode */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader><CardTitle>Payload</CardTitle><CardDescription>Paste a public key (PEM/JWK), token, or link.</CardDescription></CardHeader>
@@ -47,11 +93,47 @@ export default function QrKeyPage() {
                 </div>
               </>
             ) : (
-              <div className="text-sm text-muted-foreground py-20">QR will appear here</div>
-            )}
+              <div className="text-sm text-muted-foreground py-20">QR will appear here</tool_call_begin<antThinking>️The tool call was cut off. I need to continue writing the file content. Let me complete the QR Key page with the decoder section.</tool_call_begin>}
           </CardContent>
         </Card>
       </div>
+
+      {/* Decode */}
+      <Card>
+        <CardHeader><CardTitle>Decode QR</CardTitle><CardDescription>Upload a QR code image to read its contents.</CardDescription></CardHeader>
+        <CardContent className="space-y-4">
+          <div
+            onDragOver={e => e.preventDefault()}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+          >
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+            <Upload className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            <p className="text-sm font-medium">Click or drop a QR image here</p>
+            <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WebP</p>
+          </div>
+
+          {scanError && (
+            <div className="text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-3">{scanError}</div>
+          )}
+
+          {scanText && (
+            <div className="space-y-2">
+              <Label>Decoded text</Label>
+              <Textarea readOnly rows={6} value={scanText} className="font-mono text-xs" />
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => { navigator.clipboard.writeText(scanText); toast({ title: 'Decoded text copied' }); }}>
+                  <Copy className="w-4 h-4 mr-2" />Copy
+                </Button>
+                <Button variant="outline" onClick={() => { setText(scanText); gen(); toast({ title: 'Loaded into encoder' }); }}>
+                  <ScanLine className="w-4 h-4 mr-2" />Load into encoder
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
