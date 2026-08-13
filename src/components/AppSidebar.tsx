@@ -51,7 +51,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
-        <div className="flex items-center gap-2 px-2 py-3">
+        <div className="flex items-center gap-2 px-2 py-4">
           {collapsed ? (
             <div className="w-8 h-8 rounded-md bg-primary/10 grid place-items-center">
               <Shield className="w-4 h-4 text-primary" />
@@ -60,11 +60,12 @@ export function AppSidebar() {
             <img
               src={xaraLogo.url}
               alt="xara stegocrypt"
-              className="h-6 w-auto object-contain invert [.theme-light_&]:invert-0"
+              className="h-12 w-full max-w-[190px] object-contain object-left invert [.theme-light_&]:invert-0"
             />
           )}
         </div>
       </SidebarHeader>
+
       <SidebarContent>
         {groups.map((g) => (
           <SidebarGroup key={g.label}>
