@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import xaraLogo from '@/assets/xara-logo.png.asset.json';
 import { useTranslation } from 'react-i18next';
 import {
   Shield, Image as ImageIcon, FileLock, Hash, KeyRound, QrCode,
