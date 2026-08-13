@@ -21,12 +21,6 @@ export default function AppLayout() {
           <header className="relative h-14 flex items-center justify-between border-b bg-background/70 backdrop-blur-xl px-3 sticky top-0 z-30">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-border/60 bg-background/50">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Client-side · zero telemetry
-                </span>
-              </div>
             </div>
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
