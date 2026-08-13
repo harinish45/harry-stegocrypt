@@ -51,16 +51,16 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="w-8 h-8 rounded-md bg-primary/10 grid place-items-center">
-            <Shield className="w-4 h-4 text-primary" />
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold leading-none">StegoCrypt</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5" /> Pro Suite
-              </span>
+          {collapsed ? (
+            <div className="w-8 h-8 rounded-md bg-primary/10 grid place-items-center">
+              <Shield className="w-4 h-4 text-primary" />
             </div>
+          ) : (
+            <img
+              src={xaraLogo.url}
+              alt="xara stegocrypt"
+              className="h-6 w-auto object-contain invert [.theme-light_&]:invert-0"
+            />
           )}
         </div>
       </SidebarHeader>
