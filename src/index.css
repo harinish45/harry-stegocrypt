@@ -101,6 +101,17 @@
     font-family: 'DM Sans', system-ui, sans-serif;
   }
 
+  /* Mobile-only readability bump (desktop/tablet untouched) */
+  @media (max-width: 767px) {
+    html {
+      font-size: 17px;
+    }
+    body {
+      -webkit-text-size-adjust: 100%;
+    }
+  }
+
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
