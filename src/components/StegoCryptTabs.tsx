@@ -255,17 +255,18 @@ const StegoCryptTabs: React.FC = () => {
 
   return (
     <Tabs defaultValue="hide" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-6">
-        <TabsTrigger value="hide" className="text-base py-3">
-          <Lock className="h-4 w-4 mr-2" /> Hide Message
+      <TabsList className="grid w-full grid-cols-3 mb-6 h-auto gap-1 p-1">
+        <TabsTrigger value="hide" className="flex-col md:flex-row gap-1 md:gap-0 text-[13px] md:text-base py-2.5 md:py-3 whitespace-normal leading-tight text-center">
+          <Lock className="h-4 w-4 md:mr-2" /> Hide Message
         </TabsTrigger>
-        <TabsTrigger value="retrieve" className="text-base py-3">
-          <Unlock className="h-4 w-4 mr-2" /> Retrieve Message
+        <TabsTrigger value="retrieve" className="flex-col md:flex-row gap-1 md:gap-0 text-[13px] md:text-base py-2.5 md:py-3 whitespace-normal leading-tight text-center">
+          <Unlock className="h-4 w-4 md:mr-2" /> Retrieve Message
         </TabsTrigger>
-        <TabsTrigger value="analysis" className="text-base py-3">
-          <BookOpen className="h-4 w-4 mr-2" /> Security Analysis
+        <TabsTrigger value="analysis" className="flex-col md:flex-row gap-1 md:gap-0 text-[13px] md:text-base py-2.5 md:py-3 whitespace-normal leading-tight text-center">
+          <BookOpen className="h-4 w-4 md:mr-2" /> Security Analysis
         </TabsTrigger>
       </TabsList>
+
       
       {/* Hide Message Tab */}
       <TabsContent value="hide" className="space-y-6">
