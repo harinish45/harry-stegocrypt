@@ -1,73 +1,68 @@
-# Welcome to your Lovable project
+# 🕵️‍♂️ Harry StegoCrypt: Cyber Forensic & Cryptographic Steganography Suite
+> **Next-generation browser-based steganography engine and digital forensic suite for pixel-level payload embedding, high-entropy anomaly detection, and AES-256 payload encryption.**
 
-## Project info
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![React 18](https://img.shields.io/badge/React-18.x-61dafb?logo=react)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Bundler-Vite-purple?logo=vite)](https://vitejs.dev/)
+[![Status: Active](https://img.shields.io/badge/Status-Active%20v1.5.0-brightgreen.svg)]()
 
-**URL**: https://lovable.dev/projects/a440ee09-db46-454a-adb3-178aeda05525
+---
 
-## How can I edit this code?
+## 🏛️ Architecture Overview
 
-There are several ways of editing your application.
+Harry StegoCrypt provides zero-server-leakage client-side steganographic hiding and forensic steganalysis using WebAssembly, Web Workers, and WebCrypto APIs.
 
-**Use Lovable**
+```mermaid
+graph TD
+    A[Secret Message / Confidential File] --> B[Client-Side AES-256-GCM Encryption]
+    B --> C[Encrypted Bitstream & CRC32 Checksum]
+    D[Cover Image - PNG / WebP / BMP] --> E[Canvas Pixel Decomposer - RGBA Planes]
+    C --> F[LSB / Matrix Encoding Algorithm]
+    E --> F
+    F --> G[Stego Image Generator]
+    G --> H[Forensic Chi-Square & Visual Histogram Analyzer]
+    H --> I[(Secure Steganographic Output Image)]
+```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a440ee09-db46-454a-adb3-178aeda05525) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Key Capabilities
 
-**Use your preferred IDE**
+* **Multi-Layer Steganography:** Least Significant Bit (LSB 1-bit, 2-bit, 4-bit) and dynamic pseudorandom bit distribution.
+* **Pre-Embedding AES-256-GCM:** Payloads are encrypted and authenticated with PBKDF2 key derivation before injection into carrier pixels.
+* **Forensic Steganalysis:** Real-time visual bit-plane slicing, RGB histogram distribution analysis, and Chi-Square anomaly detection to measure detectability.
+* **Zero Cloud Storage Leakage:** All pixel modifications and cryptographic transforms execute 100% in-browser in memory.
+* **Format Preservation:** Support for lossless carriers (PNG, WebP, BMP, TIFF) ensuring zero compression artifacts corrupt the embedded payload.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 📦 Quick Start
 
-Follow these steps:
+### Installation & Development
+```bash
+# Clone repository
+git clone https://github.com/harinish45/harry-stegocrypt.git
+cd harry-stegocrypt
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Launch Vite development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:5173` to interact with the steganography laboratory.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🤖 Vibe Coding & Autonomous AI Tool Instructions
+This repository is engineered for autonomous AI development:
+* [`PRD.md`](./PRD.md) — Detailed technical requirements, forensic algorithms, and UI flow.
+* [`TODO.md`](./TODO.md) — Atomic implementation checklist with unit test acceptance criteria.
+* [`AGENTS.md`](./AGENTS.md) — Coding conventions and cryptographic invariants.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/a440ee09-db46-454a-adb3-178aeda05525) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📄 License
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
