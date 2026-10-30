@@ -1,20 +1,66 @@
-# ✅ Autonomous Implementation Checklist (Vibe Coding Guide)
+# 📋 TODO & Master Plan — harry-stegocrypt
 
-This checklist is structured for AI coding agents (Antigravity, Cursor, Claude Code, Copilot). Pick the first unchecked item `[ ]`, implement, test, and mark as `[x]`.
+> **Project**: HarryStegoСrypt — Cyber Forensic & Cryptographic Steganography Engine
+> **Stack**: TypeScript, React, Vite, Supabase
+> **Status**: 🟡 In Progress (~60%)
+> **Last Updated**: 2026-10-30
 
----
+## 🏗️ Architecture
+\\\
+harry-stegocrypt/
+├── src/
+│   ├── components/    # React UI components
+│   ├── lib/           # Core steganography logic
+│   ├── hooks/         # React custom hooks
+│   └── pages/         # App pages/routes
+├── public/            # Static assets
+├── supabase/          # DB migrations & functions
+├── index.html         # Entry point
+└── package.json
+\\\
 
-## 🎯 Phase 1: Cryptographic Pipeline
-- [ ] `src/lib/crypto/webcrypto.ts`: Implement WebCrypto AES-GCM engine
-  - [ ] Derive 256-bit key from password using PBKDF2 (SHA-256)
-  - [ ] Encrypt payload with random 12-byte IV
-  - [ ] Package payload: `[Salt (16B)][IV (12B)][Ciphertext][Tag (16B)]`
+## ✅ Completed
+- [x] Vite + React + TypeScript setup
+- [x] Tailwind CSS + shadcn/ui components
+- [x] Supabase project integration
+- [x] PRD + AGENTS.md
+- [x] LICENSE
 
-## 🎯 Phase 2: Steganography Engine Optimization
-- [ ] `src/lib/stego/lsb_worker.ts`: Web Worker for high-resolution image processing
-  - [ ] Offload 4K/8K pixel matrix bitwise operations from main UI thread
-  - [ ] Implement progress callback percentage (0-100%)
+## 🔧 In Progress
+- [ ] Core AES-256 encryption module
+- [ ] LSB steganography (image carrier)
+- [ ] File upload UI
 
-## 🎯 Phase 3: Forensic Steganalysis Tools
-- [ ] `src/components/forensics/BitPlaneViewer.tsx`: Interactive bit plane slice selector
-- [ ] `src/components/forensics/HistogramDifference.tsx`: Pixel variance calculation
+## 🚀 Roadmap
+
+### Phase 1 — Core Crypto Engine (Nov 2026)
+- [ ] AES-256-GCM encryption/decryption
+- [ ] Key derivation (PBKDF2 / Argon2)
+- [ ] LSB pixel steganography (PNG)
+- [ ] JPEG DCT coefficient steganography
+- [ ] Payload size calculator
+
+### Phase 2 — Forensic Tools (Nov–Dec 2026)
+- [ ] High-entropy region detector
+- [ ] Chi-square statistical analysis
+- [ ] Visual attack (image difference viewer)
+- [ ] Histogram analysis
+- [ ] File format anomaly detector
+
+### Phase 3 — Advanced Stego (Jan 2027)
+- [ ] Audio WAV steganography (phase coding)
+- [ ] PDF steganography (whitespace encoding)
+- [ ] Multi-layer nested stego
+- [ ] Plausible deniability (decoy payload)
+
+### Phase 4 — Forensic Platform (Feb 2027)
+- [ ] Batch file scanning
+- [ ] Case management (Supabase)
+- [ ] Report generation (PDF export)
+- [ ] Chain-of-custody audit log
+- [ ] API endpoints for DFIR teams
+
+## 🐛 Known Issues
+- [ ] .env file committed (should be .gitignore'd)
+- [ ] No test suite
+- [ ] Missing CI/CD pipeline
