@@ -1,6 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { calculateCapacity, calculateUtilizationPercent } from "@/lib/steganography/capacity";
 
 interface CapacityIndicatorProps {
   imageWidth: number;
@@ -9,19 +10,17 @@ interface CapacityIndicatorProps {
 }
 
 export const CapacityIndicator = ({ imageWidth, imageHeight, messageLength }: CapacityIndicatorProps) => {
-  // Calculate capacity (3 bits per pixel for RGB channels, excluding alpha)
-  const totalPixels = imageWidth * imageHeight;
-  const totalBits = totalPixels * 3; // 3 channels (RGB)
-  const totalBytes = Math.floor(totalBits / 8);
+  if (imageWidth <= 0 || imageHeight <= 0) {
+    return null;
+  }
+
+  // Calculate capacity using steganography engine
+  const capacity = calculateCapacity(imageWidth, imageHeight);
+  const availableBytes: number = capacity.maxPayloadBytes;
   
-  // Reserve 24 bits (3 bytes) for message length prefix
-  const availableBytes = totalBytes - 3;
-  
-  // Current message in bytes (UTF-8 encoding can be up to 4 bytes per character)
-  const messageBytes = new Blob([messageLength.toString()]).size;
-  
-  // Calculate percentage used
-  const percentageUsed = (messageBytes / availableBytes) * 100;
+  // Estimate byte length of message
+  const messageBytes: number = new TextEncoder().encode(messageLength.toString()).length;
+  const percentageUsed: number = calculateUtilizationPercent(messageBytes, availableBytes);
   
   const getStatusConfig = () => {
     if (percentageUsed > 90) {
@@ -58,7 +57,7 @@ export const CapacityIndicator = ({ imageWidth, imageHeight, messageLength }: Ca
     <div className="space-y-3">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">Image Capacity</span>
-        <span className="text-muted-foreground">
+        <span className="text-muted-foreground font-mono">
           {messageBytes} / {availableBytes.toLocaleString()} bytes
         </span>
       </div>
@@ -74,7 +73,7 @@ export const CapacityIndicator = ({ imageWidth, imageHeight, messageLength }: Ca
         <AlertDescription className="text-xs">
           <span className="font-medium">{status.message}</span>
           <br />
-          Image can hold approximately {availableBytes.toLocaleString()} characters.
+          Image can hold up to {availableBytes.toLocaleString()} raw payload bytes.
           {percentageUsed > 90 && " Consider using a larger image or shorter message."}
         </AlertDescription>
       </Alert>

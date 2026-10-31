@@ -1,3 +1,8 @@
+import {
+  embedLsb,
+  extractLsbText,
+  hasLsbPayload,
+} from '@/lib/steganography/lsb';
 
 /**
  * Converts string to binary representation
@@ -29,7 +34,7 @@ const binaryToText = (binary: string): string => {
 };
 
 /**
- * Hides a message in an image using LSB steganography
+ * Hides a message in an image using LSB steganography with magic bytes header
  * @param imageData The image data
  * @param message The message to hide
  * @returns The modified image data with the hidden message
@@ -38,105 +43,46 @@ export const hideMessage = (
   imageData: Uint8ClampedArray, 
   message: string
 ): Uint8ClampedArray => {
-  // Convert message to binary with message length prefix
-  const messageLengthBinary = message.length.toString(2).padStart(24, '0');
-  const messageBinary = textToBinary(message);
-  const fullBinary = messageLengthBinary + messageBinary;
-  
-  // Create a copy of the imageData to modify
-  const data = new Uint8ClampedArray(imageData);
-  
-  // Only use RGB channels (skip alpha)
-  let binaryIndex = 0;
-  
-  // Check if the image can hold the message
-  if (fullBinary.length > (data.length * 3) / 4) {
-    throw new Error('Message is too large for this image');
+  if (!message || message.length === 0) {
+    throw new Error('Message cannot be empty');
   }
-  
-  // Hide each bit of the binary message in the LSB of image data
-  for (let i = 0; i < data.length; i += 4) {
-    // Only modify if we still have bits to hide
-    if (binaryIndex < fullBinary.length) {
-      // Modify R channel
-      data[i] = (data[i] & 0xFE) | parseInt(fullBinary[binaryIndex], 2);
-      binaryIndex++;
-    }
-    
-    if (binaryIndex < fullBinary.length) {
-      // Modify G channel
-      data[i + 1] = (data[i + 1] & 0xFE) | parseInt(fullBinary[binaryIndex], 2);
-      binaryIndex++;
-    }
-    
-    if (binaryIndex < fullBinary.length) {
-      // Modify B channel
-      data[i + 2] = (data[i + 2] & 0xFE) | parseInt(fullBinary[binaryIndex], 2);
-      binaryIndex++;
-    }
-    
-    // Skip alpha channel (i+3)
-    
-    // If we've hidden all bits, break out
-    if (binaryIndex >= fullBinary.length) {
-      break;
-    }
-  }
-  
-  return data;
+  return embedLsb(imageData, message);
 };
 
 /**
  * Retrieves a hidden message from an image
+ * Supports both modern HSTG magic-byte payloads and legacy 24-bit payloads
  * @param imageData The image data with hidden message
  * @returns The hidden message
  */
 export const retrieveMessage = (imageData: Uint8ClampedArray): string => {
+  // First attempt extraction via modern stego engine
+  if (hasLsbPayload(imageData)) {
+    try {
+      return extractLsbText(imageData);
+    } catch (e) {
+      console.warn('HSTG magic detected but extraction failed:', e);
+    }
+  }
+
+  // Fallback to legacy 24-bit prefix extraction
   let binary = '';
   
   // Extract LSBs from RGB channels (skip alpha)
   for (let i = 0; i < imageData.length; i += 4) {
-    // Extract from R channel
     binary += (imageData[i] & 0x01).toString();
-    
-    // Extract from G channel
     binary += (imageData[i + 1] & 0x01).toString();
-    
-    // Extract from B channel
     binary += (imageData[i + 2] & 0x01).toString();
     
-    // Once we have the first 24 bits, we can determine message length
-    if (binary.length === 24) {
-      const messageLength = parseInt(binary, 2);
-      
-      // Verify that the message length is reasonable
-      if (messageLength <= 0 || messageLength > 10000) {
-        console.log("Invalid message length detected:", messageLength);
-        return ''; // Return empty if message length is invalid
-      }
-      
-      // Calculate how many more bits we need to extract
-      const totalBitsNeeded = 24 + (messageLength * 8);
-      
-      // Continue extracting until we have all the bits
-      if (binary.length < totalBitsNeeded) {
-        continue;
-      }
-    }
-    
-    // If we have enough bits to extract the complete message
+    // Once we have the first 24 bits, check message length
     if (binary.length >= 24) {
       const messageLength = parseInt(binary.substring(0, 24), 2);
       
-      // Verify that the message length is reasonable
-      if (messageLength <= 0 || messageLength > 10000) {
-        console.log("Invalid message length detected:", messageLength);
-        return ''; // Return empty if message length is invalid
+      if (messageLength <= 0 || messageLength > 100000) {
+        return '';
       }
       
       const totalBits = 24 + (messageLength * 8);
-      
-      // If we have all bits needed, extract and return the message
       if (binary.length >= totalBits) {
         const messageBinary = binary.substring(24, totalBits);
         return binaryToText(messageBinary);
@@ -144,7 +90,6 @@ export const retrieveMessage = (imageData: Uint8ClampedArray): string => {
     }
   }
   
-  console.log("Could not find a valid message in the image");
   return '';
 };
 
